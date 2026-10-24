@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# عسل نوجا · Asal Noja
 
-## Getting Started
+فروشگاه چندزبانه عسل با Next.js 16، پنل مدیریت داخلی، آمار بازدید و درگاه پرداخت قابل تنظیم برای هر کشور.
 
-First, run the development server:
+## راه‌اندازی
+
+دیتابیس PostgreSQL است. برای توسعه محلی نیازی به نصب PostgreSQL یا Docker نیست:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # AUTH_SECRET را حتماً عوض کنید
+npm run db:dev               # ترمینال ۱: PostgreSQL واقعی روی پورت 5433 (داده‌ها در data/pg)
+npm run db:setup             # ترمینال ۲: ساخت جداول + داده نمونه + حساب ادمین
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+اگر PostgreSQL خودتان را دارید، فقط `DATABASE_URL` را در `.env.local` تنظیم کنید و `db:dev` را اجرا نکنید.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+پنل مدیریت: `/admin` — حساب اولیه از `ADMIN_EMAIL` و `ADMIN_PASSWORD` در `.env.local` ساخته می‌شود (پیش‌فرض `admin@asalnoja.ir` / `admin12345`). بعد از اولین ورود از «تنظیمات» رمز را عوض کنید.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ساختار
 
-## Learn More
+| مسیر | کار |
+| --- | --- |
+| `src/app/[locale]` | فروشگاه: خانه، فروشگاه، دسته، محصول، تسویه، وضعیت سفارش، درباره ما |
+| `src/app/admin` | پنل مدیریت (فارسی، راست‌چین) |
+| `src/app/api/track` | ثبت بازدید (بدون سرویس خارجی، ربات‌ها فیلتر می‌شوند) |
+| `src/app/api/payment/[gateway]/callback` | بازگشت از درگاه و تأیید پرداخت |
+| `src/lib/payments.ts` | آداپتورهای زرین‌پال، Stripe، PayPal، کارت به کارت، پرداخت در محل |
+| `src/db/schema.ts` | جداول PostgreSQL (Drizzle ORM) |
+| `public/images` | عکس‌های سایت و محصولات نمونه (منبع در `CREDITS.md`) |
+| `src/i18n/defaults.ts` | متن‌های اولیه فارسی، انگلیسی و عربی |
 
-To learn more about Next.js, take a look at the following resources:
+## امکانات پنل
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **محصولات**: متن، توضیحات و سئوی جداگانه برای هر زبان، پیش‌نمایش نتیجه گوگل، چند تصویر، رنگ عسل، شناسنامه برداشت (ارتفاع، رطوبت، سال)
+- **زبان‌ها**: افزودن زبان جدید (کد، جهت متن، ارز نمایش)، فعال/غیرفعال، تعیین زبان پیش‌فرض، ویرایش همه متن‌های رابط کاربری
+- **کشورها**: فعال/غیرفعال کردن فروش، هزینه و آستانه ارسال رایگان، و انتخاب درگاه‌های پرداخت هر کشور
+- **درگاه‌ها**: روشن/خاموش، حالت آزمایشی، کلیدها (کلیدهای محرمانه به مرورگر فرستاده نمی‌شوند)
+- **ارزها**: نرخ تبدیل نسبت به تومان (همه قیمت‌ها به تومان ذخیره می‌شوند)
+- **سفارش‌ها** و **داشبورد**: بازدید روزانه، بازدیدکننده، کشور، دستگاه، منبع ورود، پربازدیدترین محصولات و فروش
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## سئو
 
-## Deploy on Vercel
+- آدرس جدا برای هر زبان (`/fa`, `/en`, `/ar`, …) با `hreflang` و `x-default`
+- canonical، Open Graph، Twitter Card و عنوان/توضیح متا برای هر صفحه
+- JSON-LD: Organization، WebSite، FAQPage، Product + Offer، BreadcrumbList، ItemList
+- `sitemap.xml` چندزبانه (فقط زبان‌هایی که ترجمه واقعی دارند)، `robots.txt`، manifest
+- صفحات فروشگاه در build ساخته و هر ۵ دقیقه یا بلافاصله بعد از تغییر در پنل بازسازی می‌شوند
+- فونت‌ها (وزیرمتن، لاله‌زار، Fraunces) داخل پروژه‌اند و به Google Fonts وابسته نیستند
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## انتشار
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. یک دیتابیس PostgreSQL بسازید و `DATABASE_URL` را تنظیم کنید (برای سرویس‌های ابری مثل Neon، Supabase یا لیارا `DATABASE_SSL=true`).
+2. روی سرور: `npm ci && npm run db:setup && npm run build && npm start`
+3. در پنل → تنظیمات، «آدرس اصلی سایت» را به دامنه واقعی تغییر دهید (برای sitemap و canonical لازم است).
+4. از دیتابیس (`pg_dump`) و پوشه `storage/uploads/` (تصاویر آپلودی) بکاپ منظم بگیرید.
+5. برای آمار کشور بازدیدکننده، سایت را پشت Cloudflare قرار دهید (هدر `cf-ipcountry`).
+6. پشت Nginx هدرهای `X-Forwarded-Host` و `X-Forwarded-Proto` را بفرستید تا آدرس بازگشت درگاه درست ساخته شود.
+
+**عکس‌ها:** عکس‌های فعلی از Unsplash (مجوز آزاد تجاری) هستند تا سایت از ابتدا واقعی دیده شود. قبل از انتشار، عکس محصولات خودتان را از پنل → محصولات آپلود کنید.
+
+### درگاه‌ها
+
+- **زرین‌پال**: مرچنت کد را وارد و حالت آزمایشی را خاموش کنید. مبلغ همیشه به تومان پرداخت می‌شود.
+- **Stripe / PayPal**: کلیدها را وارد کنید. اگر ارز کشور پشتیبانی نشود، مبلغ به دلار تبدیل می‌شود.
+- **کارت به کارت**: شماره کارت و شبا را در «تنظیمات» وارد کنید.
+
+## تغییر دیتابیس
+
+بعد از تغییر `src/db/schema.ts`:
+
+```bash
+npm run db:generate   # ساخت migration
+npm run db:setup      # اجرای migration
+```
