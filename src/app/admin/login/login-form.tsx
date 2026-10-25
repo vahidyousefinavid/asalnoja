@@ -18,7 +18,7 @@ export function LoginForm() {
         </div>
       </div>
       <div className="space-y-4">
-        <Input label="ایمیل" name="email" type="email" autoComplete="username" required dir="ltr" />
+        <Input label="نام کاربری" name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required dir="ltr" />
         <Input label="رمز عبور" name="password" type="password" autoComplete="current-password" required dir="ltr" />
         {state?.error ? (
           <p role="alert" className="flex items-center gap-2 text-sm text-danger">

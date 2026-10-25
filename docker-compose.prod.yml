@@ -51,7 +51,8 @@ services:
       DATABASE_URL: postgres://asalnoja:${POSTGRES_PASSWORD}@db:5432/asalnoja
       VIRTUAL_HOST: ${SITE_HOST:?set SITE_HOST in .env}
       VIRTUAL_PORT: "3000"
-      LETSENCRYPT_HOST: ${SITE_HOST}
+      # فقط دامنه‌هایی که DNS آن‌ها به این سرور اشاره می‌کند
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-${SITE_HOST}}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-}
       # اگر سرور به Let's Encrypt دسترسی ندارد: https://acme.zerossl.com/v2/DV90
       ACME_CA_URI: ${ACME_CA_URI:-https://acme-v02.api.letsencrypt.org/directory}

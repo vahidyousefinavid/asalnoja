@@ -66,6 +66,22 @@ npm run dev                  # http://localhost:3000
 - **Stripe / PayPal**: کلیدها را وارد کنید. اگر ارز کشور پشتیبانی نشود، مبلغ به دلار تبدیل می‌شود.
 - **کارت به کارت**: شماره کارت و شبا را در «تنظیمات» وارد کنید.
 
+### انتشار با Docker (روش فعلی سرور)
+
+پروژه پشت `nginx-proxy` و `acme-companion` اجرا می‌شود:
+
+```bash
+# روی سرور، در پوشه پروژه، یک فایل .env با این مقادیر بسازید:
+# SITE_HOST, NEXT_PUBLIC_SITE_URL, POSTGRES_PASSWORD, AUTH_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+# (و در صورت نیاز NPM_REGISTRY=https://registry.npmmirror.com و ACME_CA_URI)
+docker compose -f docker-compose.prod.yml build app
+docker compose -f docker-compose.prod.yml up -d db
+docker compose -f docker-compose.prod.yml --profile setup run --rm setup   # فقط بار اول یا بعد از migration جدید
+docker compose -f docker-compose.prod.yml up -d app
+```
+
+دیتابیس در volume `asalnoja_db-data` و تصاویر آپلودی در `asalnoja_uploads` نگه داشته می‌شوند.
+
 ## تغییر دیتابیس
 
 بعد از تغییر `src/db/schema.ts`:

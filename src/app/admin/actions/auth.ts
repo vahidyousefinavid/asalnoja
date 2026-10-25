@@ -22,7 +22,7 @@ export async function login(_prev: { error?: string } | undefined, form: FormDat
 
   if (!ok) {
     attempts.set(ip, { n: (rec && Date.now() - rec.at < 15 * 60_000 ? rec.n : 0) + 1, at: Date.now() });
-    return { error: "ایمیل یا رمز عبور درست نیست." };
+    return { error: "نام کاربری یا رمز عبور درست نیست." };
   }
   attempts.delete(ip);
   await createSession({ uid: user.id, email: user.email, name: user.name });
