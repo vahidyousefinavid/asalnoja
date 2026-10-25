@@ -53,6 +53,8 @@ services:
       VIRTUAL_PORT: "3000"
       LETSENCRYPT_HOST: ${SITE_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-}
+      # اگر سرور به Let's Encrypt دسترسی ندارد: https://acme.zerossl.com/v2/DV90
+      ACME_CA_URI: ${ACME_CA_URI:-https://acme-v02.api.letsencrypt.org/directory}
     volumes:
       - uploads:/app/storage/uploads
     depends_on:

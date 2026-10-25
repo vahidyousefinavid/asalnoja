@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 
@@ -19,10 +19,12 @@ export async function createSession(user: Session) {
     .setIssuedAt()
     .setExpirationTime(`${MAX_AGE}s`)
     .sign(secret());
+  // پشت پروکسی، پروتکل واقعی از X-Forwarded-Proto می‌آید؛ روی HTTP کوکی Secure ذخیره نمی‌شود
+  const proto = (await headers()).get("x-forwarded-proto");
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: proto ? proto === "https" : process.env.NODE_ENV === "production",
     path: "/",
     maxAge: MAX_AGE,
   });
