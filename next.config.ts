@@ -4,7 +4,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["pg"],
   images: {
-    formats: ["image/avif", "image/webp"],
+    // AVIF روی سرور تک‌هسته‌ای برای هر تصویر تا یک دقیقه CPU می‌گیرد؛ WebP چند برابر سریع‌تر است
+    formats: ["image/webp"],
+    minimumCacheTTL: 2592000,
     localPatterns: [{ pathname: "/media/**" }, { pathname: "/images/**" }],
   },
   turbopack: {
