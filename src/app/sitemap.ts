@@ -4,7 +4,9 @@ import { getDefaultLanguage, getEnabledLanguages } from "@/lib/i18n";
 import { absoluteUrl } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 
-export const revalidate = 3600;
+// همیشه از دیتابیس خوانده می‌شود تا build به دیتابیس نیاز نداشته باشد
+export const dynamic = "force-dynamic";
+
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [settings, langs, def] = await Promise.all([getSettings(), getEnabledLanguages(), getDefaultLanguage()]);

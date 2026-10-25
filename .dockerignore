@@ -1,0 +1,11 @@
+.git
+.next
+node_modules
+data
+storage/uploads/*
+!storage/uploads/.gitkeep
+.env*
+!.env.example
+*.tsbuildinfo
+Dockerfile
+docker-compose*.yml

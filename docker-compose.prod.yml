@@ -1,0 +1,72 @@
+# انتشار روی سرور: پشت nginx-proxy + acme-companion (گواهی Let's Encrypt خودکار)
+# docker compose -f docker-compose.prod.yml -p asalnoja up -d --build
+name: asalnoja
+
+services:
+  db:
+    image: ${POSTGRES_IMAGE:-postgres:16}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: asalnoja
+      POSTGRES_USER: asalnoja
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks: [internal]
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U asalnoja -d asalnoja"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: { driver: json-file, options: { max-size: "5m", max-file: "3" } }
+
+  # یک‌بار اجرا: ساخت جداول و داده اولیه
+  setup:
+    build:
+      context: .
+      target: setup
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+    image: asalnoja-setup:latest
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://asalnoja:${POSTGRES_PASSWORD}@db:5432/asalnoja
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [internal]
+    profiles: [setup]
+
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+    image: asalnoja-app:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://asalnoja:${POSTGRES_PASSWORD}@db:5432/asalnoja
+      VIRTUAL_HOST: ${SITE_HOST:?set SITE_HOST in .env}
+      VIRTUAL_PORT: "3000"
+      LETSENCRYPT_HOST: ${SITE_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-}
+    volumes:
+      - uploads:/app/storage/uploads
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [internal, proxy]
+    mem_limit: 512m
+    logging: { driver: json-file, options: { max-size: "5m", max-file: "3" } }
+
+volumes:
+  db-data:
+  uploads:
+
+networks:
+  internal:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-nginx-proxy}

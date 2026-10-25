@@ -11,11 +11,13 @@ import { getCurrencyForLocale, getT } from "@/lib/i18n";
 import { convert, formatMoney, formatNumber } from "@/lib/money";
 import { absoluteUrl, buildMetadata, jsonLd } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
+import { skipPrerender } from "@/lib/build";
 
 export const revalidate = 300;
 
 /** همه محصولات در build ساخته می‌شوند؛ محصول جدید در اولین بازدید ساخته و کش می‌شود */
 export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  if (skipPrerender) return [];
   return (await getProducts(params.locale)).map((p) => ({ slug: p.slug }));
 }
 

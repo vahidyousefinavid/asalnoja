@@ -4,10 +4,12 @@ import { getCategories, getProducts } from "@/lib/catalog";
 import { getCurrencyForLocale, getT } from "@/lib/i18n";
 import { buildMetadata } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
+import { skipPrerender } from "@/lib/build";
 
 export const revalidate = 300;
 
 export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  if (skipPrerender) return [];
   return (await getCategories(params.locale)).map((c) => ({ slug: c.slug }));
 }
 

@@ -10,10 +10,12 @@ import { CartDrawer } from "@/components/store/cart";
 import { Footer } from "@/components/store/footer";
 import { Tracker } from "@/components/store/tracker";
 import { ThemeScript } from "@/components/theme";
+import { skipPrerender } from "@/lib/build";
 
 export const revalidate = 300;
 
 export async function generateStaticParams() {
+  if (skipPrerender) return [];
   return (await getEnabledLanguages()).map((l) => ({ locale: l.code }));
 }
 
